@@ -18,6 +18,7 @@ def count(y: np.ndarray) -> np.ndarray:
     )  # Remove this line when you implement the function
 
 
+# Thone fikser denne
 def gini_index(y: np.ndarray) -> float:
     """
     Return the Gini Index of a given NumPy array y.
@@ -25,6 +26,9 @@ def gini_index(y: np.ndarray) -> float:
     Example:
         gini_index(np.array([1, 1, 2, 2, 3, 3, 4, 4])) -> 0.75
     """
+    
+    
+    
     raise NotImplementedError(
         "Implement this function"
     )  # Remove this line when you implement the function
@@ -38,28 +42,24 @@ def entropy(y: np.ndarray) -> float:
         "Implement this function"
     )  # Remove this line when you implement the function
 
-
+# Thone skal utføre denne
 def split(x: np.ndarray, value: float) -> np.ndarray:
     """
     Return a boolean mask for the elements of x satisfying x <= value.
     Example:
         split(np.array([1, 2, 3, 4, 5, 2]), 3) -> np.array([True, True, True, False, False, True])
     """
-    raise NotImplementedError(
-        "Implement this function"
-    )  # Remove this line when you implement the function
+    return x <= value
 
-
+# Thone skal utføre denne
 def most_common(y: np.ndarray) -> int:
     """
     Return the most common element in y.
     Example:
         most_common(np.array([1, 2, 2, 3, 3, 3, 4, 4, 4, 4])) -> 4
     """
-    raise NotImplementedError(
-        "Implement this function"
-    )  # Remove this line when you implement the function
-
+    value, counts = np.unique(y, return_counts=True)
+    return value[np.argmax(counts)]
 
 class Node:
     """
