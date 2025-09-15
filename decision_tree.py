@@ -13,10 +13,11 @@ def count(y: np.ndarray) -> np.ndarray:
     Example:
         count(np.array([3, 0, 0, 1, 1, 1, 2, 2, 2, 2])) -> np.array([0.2, 0.3, 0.4, 0.1])
     """
-    raise NotImplementedError(
-        "Implement this function"
-    )  # Remove this line when you implement the function
-
+    _ , counts = np.unique(y, return_counts=True)
+    proportions = counts / counts.sum()
+    return proportions
+    
+print(count(np.array([3, 0, 0, 1, 1, 1, 2, 2, 2, 2])))
 
 def gini_index(y: np.ndarray) -> float:
     """
@@ -34,10 +35,9 @@ def entropy(y: np.ndarray) -> float:
     """
     Return the entropy of a given NumPy array y.
     """
-    raise NotImplementedError(
-        "Implement this function"
-    )  # Remove this line when you implement the function
+    return -np.sum(count(y)*np.log2(count(y)))
 
+print(entropy(np.array([3, 0, 0, 1, 1, 1, 2, 2, 2, 2])))
 
 def split(x: np.ndarray, value: float) -> np.ndarray:
     """
