@@ -13,10 +13,11 @@ def count(y: np.ndarray) -> np.ndarray:
     Example:
         count(np.array([3, 0, 0, 1, 1, 1, 2, 2, 2, 2])) -> np.array([0.2, 0.3, 0.4, 0.1])
     """
-    raise NotImplementedError(
-        "Implement this function"
-    )  # Remove this line when you implement the function
-
+    _ , counts = np.unique(y, return_counts=True)
+    proportions = counts / counts.sum()
+    return proportions
+    
+print(count(np.array([3, 0, 0, 1, 1, 1, 2, 2, 2, 2])))
 
 # Thone fikser denne
 def gini_index(y: np.ndarray) -> float:
@@ -26,23 +27,19 @@ def gini_index(y: np.ndarray) -> float:
     Example:
         gini_index(np.array([1, 1, 2, 2, 3, 3, 4, 4])) -> 0.75
     """
-    
-    
-    
-    raise NotImplementedError(
-        "Implement this function"
-    )  # Remove this line when you implement the function
 
+    
+    
+    
+    1 - np.sum(count(y)**2)
 
 def entropy(y: np.ndarray) -> float:
     """
     Return the entropy of a given NumPy array y.
     """
-    raise NotImplementedError(
-        "Implement this function"
-    )  # Remove this line when you implement the function
+    return -np.sum(count(y)*np.log2(count(y)))
 
-# Thone skal utføre denne
+
 def split(x: np.ndarray, value: float) -> np.ndarray:
     """
     Return a boolean mask for the elements of x satisfying x <= value.
@@ -143,5 +140,7 @@ if __name__ == "__main__":
     print(f"Training accuracy: {accuracy_score(y_train, rf.predict(X_train))}")
     print(f"Validation accuracy: {accuracy_score(y_val, rf.predict(X_val))}")
 
+
+print(entropy(np.array([3, 0, 0, 1, 1, 1, 2, 2, 2, 2])))
 
 print("dette er Thone, din hacker")
