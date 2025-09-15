@@ -142,3 +142,6 @@ if __name__ == "__main__":
 
     print(f"Training accuracy: {accuracy_score(y_train, rf.predict(X_train))}")
     print(f"Validation accuracy: {accuracy_score(y_val, rf.predict(X_val))}")
+
+
+print("dette er Thone, din hacker")
