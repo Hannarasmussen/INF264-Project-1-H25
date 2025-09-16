@@ -38,6 +38,7 @@ def entropy(y: np.ndarray) -> float:
     Return the entropy of a given NumPy array y.
     """
     return -np.sum(count(y)*np.log2(count(y)))
+    return -np.sum(count(y)*np.log2(count(y)))
 
 print("entropy:", entropy(np.array([3, 0, 0, 1, 1, 1, 2, 2, 2, 2])))
 
