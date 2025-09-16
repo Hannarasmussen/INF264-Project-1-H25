@@ -1,6 +1,9 @@
 import numpy as np
 from typing import Self
 
+from sklearn import tree
+from sklearn.tree import DecisionTreeClassifier
+
 """
 This is a suggested template and you do not need to follow it. You can change any part of it to fit your needs.
 There are some helper functions that might be useful to implement first.
@@ -17,9 +20,9 @@ def count(y: np.ndarray) -> np.ndarray:
     proportions = counts / counts.sum()
     return proportions
     
-print(count(np.array([3, 0, 0, 1, 1, 1, 2, 2, 2, 2])))
+print( "count:", count(np.array([3, 0, 0, 1, 1, 1, 2, 2, 2, 2])))
 
-# Thone fikser denne
+
 def gini_index(y: np.ndarray) -> float:
     """
     Return the Gini Index of a given NumPy array y.
@@ -28,9 +31,6 @@ def gini_index(y: np.ndarray) -> float:
         gini_index(np.array([1, 1, 2, 2, 3, 3, 4, 4])) -> 0.75
     """
 
-    
-    
-    
     1 - np.sum(count(y)**2)
 
 def entropy(y: np.ndarray) -> float:
@@ -39,6 +39,7 @@ def entropy(y: np.ndarray) -> float:
     """
     return -np.sum(count(y)*np.log2(count(y)))
 
+print("entropy:", entropy(np.array([3, 0, 0, 1, 1, 1, 2, 2, 2, 2])))
 
 def split(x: np.ndarray, value: float) -> np.ndarray:
     """
@@ -48,7 +49,7 @@ def split(x: np.ndarray, value: float) -> np.ndarray:
     """
     return x <= value
 
-# Thone skal utføre denne
+
 def most_common(y: np.ndarray) -> int:
     """
     Return the most common element in y.
@@ -57,6 +58,8 @@ def most_common(y: np.ndarray) -> int:
     """
     value, counts = np.unique(y, return_counts=True)
     return value[np.argmax(counts)]
+
+print("most common:", most_common(np.array([1, 2, 2, 3, 3, 3, 4, 4, 4, 3])))
 
 class Node:
     """
@@ -100,12 +103,38 @@ class DecisionTree:
         X: np.ndarray,
         y: np.ndarray,
     ):
+
+        ## finn beste split
+        ## lag to nye lister med splitten
+        ## kall fit rekursivt på hver av listene og lag en node
         """
         This functions learns a decision tree given (continuous) features X and (integer) labels y.
         """
-        raise NotImplementedError(
-            "Implement this function"
-        )  # Remove this line when you implement the function
+
+        #if all datapoints have the same label, return a leaf node with that label.
+        if len(np.unique(y)) == 1:
+            return Node(value=self.count(y))
+        
+        #If all data points have identical feature values, return a leaf node with the most common label.
+        if np.all(X == X[0]):
+            return Node(value=self.count(y))
+        
+
+        #split on mean or median on a datapoint with most information gain into to arraylists
+
+        
+    
+
+   
+
+        #Otherwise, choose a feature that maximizes the information gain, split the data based on
+        #the value of the feature, and add a branch for each subset of data. For each branch, call the
+        #algorithm recursively for the data points belonging to the particular branch.
+    
+    
+    
+    
+
 
     def predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -141,6 +170,11 @@ if __name__ == "__main__":
     print(f"Validation accuracy: {accuracy_score(y_val, rf.predict(X_val))}")
 
 
-print(entropy(np.array([3, 0, 0, 1, 1, 1, 2, 2, 2, 2])))
+
 
 print("dette er Thone, din hacker")
+
+clf = DecisionTreeClassifier().fit(X, y)
+
+tree_text = tree.export_text(clf, feature_names=["f1", "f2", "f3"])
+print(tree_text)
