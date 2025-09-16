@@ -1,6 +1,9 @@
 import numpy as np
 from typing import Self
 
+from sklearn import tree
+from sklearn.tree import DecisionTreeClassifier
+
 """
 This is a suggested template and you do not need to follow it. You can change any part of it to fit your needs.
 There are some helper functions that might be useful to implement first.
@@ -13,12 +16,13 @@ def count(y: np.ndarray) -> np.ndarray:
     Example:
         count(np.array([3, 0, 0, 1, 1, 1, 2, 2, 2, 2])) -> np.array([0.2, 0.3, 0.4, 0.1])
     """
-    raise NotImplementedError(
-        "Implement this function"
-    )  # Remove this line when you implement the function
+    _ , counts = np.unique(y, return_counts=True)
+    proportions = counts / counts.sum()
+    return proportions
+    
+print( "count:", count(np.array([3, 0, 0, 1, 1, 1, 2, 2, 2, 2])))
 
 
-# Thone fikser denne
 def gini_index(y: np.ndarray) -> float:
     """
     Return the Gini Index of a given NumPy array y.
@@ -26,23 +30,20 @@ def gini_index(y: np.ndarray) -> float:
     Example:
         gini_index(np.array([1, 1, 2, 2, 3, 3, 4, 4])) -> 0.75
     """
-    
-    
-    
-    raise NotImplementedError(
-        "Implement this function"
-    )  # Remove this line when you implement the function
 
+    return 1 - np.sum(count(y)**2)
+
+print("gini index:", gini_index(np.array([1, 1, 2, 2, 3, 3, 4, 4])))
 
 def entropy(y: np.ndarray) -> float:
     """
     Return the entropy of a given NumPy array y.
     """
-    raise NotImplementedError(
-        "Implement this function"
-    )  # Remove this line when you implement the function
+    return -np.sum(count(y)*np.log2(count(y)))
+    return -np.sum(count(y)*np.log2(count(y)))
 
-# Thone skal utføre denne
+print("entropy:", entropy(np.array([3, 0, 0, 1, 1, 1, 2, 2, 2, 2])))
+
 def split(x: np.ndarray, value: float) -> np.ndarray:
     """
     Return a boolean mask for the elements of x satisfying x <= value.
@@ -51,7 +52,9 @@ def split(x: np.ndarray, value: float) -> np.ndarray:
     """
     return x <= value
 
-# Thone skal utføre denne
+print("split:", split(np.array([1, 2, 3, 4, 5, 2]), 3))
+
+
 def most_common(y: np.ndarray) -> int:
     """
     Return the most common element in y.
@@ -60,6 +63,15 @@ def most_common(y: np.ndarray) -> int:
     """
     value, counts = np.unique(y, return_counts=True)
     return value[np.argmax(counts)]
+
+print("most common:", most_common(np.array([1, 2, 2, 3, 3, 3, 4, 4, 4, 3])))
+
+def best_split(X: np.ndarray, y: np.ndarray, criterion: str) -> tuple[int, float]:
+    """
+    Given a NumPy array X of features and a NumPy array y of integer labels,
+    return the index of the feature and the threshold value to split on that maximizes the information gain.
+    """
+   
 
 class Node:
     """
@@ -98,26 +110,83 @@ class DecisionTree:
         self.criterion = criterion
         self.max_depth = max_depth
 
+
+
     def fit(
         self,
         X: np.ndarray,
         y: np.ndarray,
     ):
+        self.root = self._fit(X, y)
+
+    def _fit(
+        self,
+        X: np.ndarray,
+        y: np.ndarray,
+    ):
+        
         """
         This functions learns a decision tree given (continuous) features X and (integer) labels y.
         """
-        raise NotImplementedError(
-            "Implement this function"
-        )  # Remove this line when you implement the function
+
+        if len(np.unique(y)) == 1:
+            return Node(value= most_common(y))
+
+        if np.all(X == X[0]):
+            return Node(value= most_common(y))
+        
+        if self.max_depth is not None and self.max_depth <= 0:
+            return Node(value= most_common(y))
+
+        n_samples, n_features = X.shape
+        best_ig = -1
+        best_feature = None
+        best_threshold = None   
+
+        for i in range(n_features):
+            threshold = np.median(X[:, i])
+            mask = split(X[:, i], threshold)
+            right_y, left_y = y[mask], y[~mask]
+
+            ig = entropy(y) - ((len(left_y)/n_samples) * entropy(left_y) + (len(right_y)/n_samples) * entropy(right_y))
+            if ig > best_ig: 
+                best_ig = ig
+                best_feature = i
+                best_threshold = threshold
+
+        best_threshold = np.median(X[:, best_feature])
+
+        if best_ig <= 0:
+            return Node(value= most_common(y))
+
+        mask = split(X[:, best_feature], best_threshold)
+        left_node = self._fit(X[mask], y[mask])
+        right_node = self._fit(X[~mask], y[~mask])
+
+        return Node(
+            feature=best_feature,
+            threshold=best_threshold,
+            left=left_node,
+            right=right_node,
+        )
+    
 
     def predict(self, X: np.ndarray) -> np.ndarray:
         """
         Given a NumPy array X of features, return a NumPy array of predicted integer labels.
         """
-        raise NotImplementedError(
-            "Implement this function"
-        )  # Remove this line when you implement the function
+        return np.array([self._predict(x, self.root) for x in X])
 
+    def _predict(self, x: np.ndarray, node: Node) -> int:
+        """
+        Given a single data point x and a decision tree node, return the predicted integer label.
+        """
+        if node.is_leaf():
+            return node.value
+        if x[node.feature] <= node.threshold:
+            return self._predict(x, node.left)
+        else:
+            return self._predict(x, node.right)
 
 if __name__ == "__main__":
     # Test the DecisionTree class on a synthetic dataset
@@ -142,6 +211,5 @@ if __name__ == "__main__":
 
     print(f"Training accuracy: {accuracy_score(y_train, rf.predict(X_train))}")
     print(f"Validation accuracy: {accuracy_score(y_val, rf.predict(X_val))}")
-
 
 print("dette er Thone, din hacker")
