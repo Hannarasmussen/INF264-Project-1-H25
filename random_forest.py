@@ -1,4 +1,5 @@
 import numpy as np
+from decision_tree import DecisionTree, most_common
 
 
 class RandomForest:
@@ -14,16 +15,49 @@ class RandomForest:
         self.criterion = criterion
         self.max_features = max_features
 
+    def features_subset(self, n_features: int) -> np.ndarray:
+        if self.max_features == "sqrt":
+            max_features = int(np.sqrt(n_features))
+        elif self.max_features == "log2":
+            max_features = int(np.log2(n_features))
+        else:
+            max_features = n_features
+
+        feature_indices = np.random.choice(
+            n_features, size=max_features, replace=False
+        )
+        return feature_indices
+
     def fit(self, X: np.ndarray, y: np.ndarray):
-        raise NotImplementedError(
-            "Implement this function"
-        )  # Remove this line when you implement the function
+
+        n_samples, n_features = X.shape
+        
+        self.trees = []
+
+        for i in range(self.n_estimators):
+            indices = np.random.choice(n_samples, size=n_samples, replace=True)
+            X_sample, y_sample = X[indices], y[indices]
+            
+            feature_indices = self.features_subset(n_features)
+            X_sample = X_sample[:, feature_indices]
+
+            tree = DecisionTree(max_depth=self.max_depth, criterion=self.criterion)
+            tree.fit(X_sample, y_sample)
+            self.trees.append((tree, feature_indices))
+
 
     def predict(self, X: np.ndarray) -> np.ndarray:
-        raise NotImplementedError(
-            "Implement this function"
-        )  # Remove this line when you implement the function
+        
+        all_prediction = []
+        for i in range(self.n_estimators):
+            tree, feature_indices = self.trees[i]
+            X_subset = X[:, feature_indices]
 
+            predictions = DecisionTree.predict_tree(tree, X_subset)
+            all_prediction.append(predictions)
+        all_prediction = np.array(all_prediction)
+
+        return np.array([most_common(pred) for pred in all_prediction.T])
 
 if __name__ == "__main__":
     # Test the RandomForest class on a synthetic dataset
@@ -43,7 +77,7 @@ if __name__ == "__main__":
     )
 
     rf = RandomForest(
-        n_estimators=20, max_depth=5, criterion="entropy", max_features="sqrt"
+        n_estimators=20, max_depth=5, criterion="gini", max_features="one"
     )
     rf.fit(X_train, y_train)
 

@@ -110,8 +110,6 @@ class DecisionTree:
         self.criterion = criterion
         self.max_depth = max_depth
 
-
-
     def fit(
         self,
         X: np.ndarray,
@@ -171,7 +169,7 @@ class DecisionTree:
         )
     
 
-    def predict(self, X: np.ndarray) -> np.ndarray:
+    def predict_tree(self, X: np.ndarray) -> np.ndarray:
         """
         Given a NumPy array X of features, return a NumPy array of predicted integer labels.
         """
@@ -209,7 +207,7 @@ if __name__ == "__main__":
     rf = DecisionTree(max_depth=None, criterion="entropy")
     rf.fit(X_train, y_train)
 
-    print(f"Training accuracy: {accuracy_score(y_train, rf.predict(X_train))}")
-    print(f"Validation accuracy: {accuracy_score(y_val, rf.predict(X_val))}")
+    print(f"Training accuracy: {accuracy_score(y_train, rf.predict_tree(X_train))}")
+    print(f"Validation accuracy: {accuracy_score(y_val, rf.predict_tree(X_val))}")
 
 print("dette er Thone, din hacker")
