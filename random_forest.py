@@ -34,7 +34,7 @@ class RandomForest:
         
         self.trees = []
 
-        for i in range(self.n_estimators):
+        for _ in range(self.n_estimators):
             indices = np.random.choice(n_samples, size=n_samples, replace=True)
             X_sample, y_sample = X[indices], y[indices]
             
@@ -47,13 +47,12 @@ class RandomForest:
 
 
     def predict(self, X: np.ndarray) -> np.ndarray:
-        
         all_prediction = []
         for i in range(self.n_estimators):
             tree, feature_indices = self.trees[i]
             X_subset = X[:, feature_indices]
 
-            predictions = DecisionTree.predict_tree(tree, X_subset)
+            predictions = tree.predict(X_subset)
             all_prediction.append(predictions)
         all_prediction = np.array(all_prediction)
 
@@ -77,7 +76,7 @@ if __name__ == "__main__":
     )
 
     rf = RandomForest(
-        n_estimators=20, max_depth=5, criterion="gini", max_features="one"
+        n_estimators=20, max_depth=5, criterion="gini", max_features="sqrt"
     )
     rf.fit(X_train, y_train)
 

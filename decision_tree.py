@@ -169,7 +169,7 @@ class DecisionTree:
         )
     
 
-    def predict_tree(self, X: np.ndarray) -> np.ndarray:
+    def predict(self, X: np.ndarray) -> np.ndarray:
         """
         Given a NumPy array X of features, return a NumPy array of predicted integer labels.
         """
