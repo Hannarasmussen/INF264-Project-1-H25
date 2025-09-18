@@ -15,18 +15,18 @@ class RandomForest:
         self.criterion = criterion
         self.max_features = max_features
 
-    def features_subset(self, n_features: int) -> np.ndarray:
-        if self.max_features == "sqrt":
-            max_features = int(np.sqrt(n_features))
-        elif self.max_features == "log2":
-            max_features = int(np.log2(n_features))
-        else:
-            max_features = n_features
+    # def features_subset(self, n_features: int) -> np.ndarray:
+    #     if self.max_features == "sqrt":
+    #         max_features = int(np.sqrt(n_features))
+    #     elif self.max_features == "log2":
+    #         max_features = int(np.log2(n_features))
+    #     else:
+    #         max_features = n_features
 
-        feature_indices = np.random.choice(
-            n_features, size=max_features, replace=False
-        )
-        return feature_indices
+    #     feature_indices = np.random.choice(
+    #         n_features, size=max_features, replace=False
+    #     )
+    #     return feature_indices
 
     def fit(self, X: np.ndarray, y: np.ndarray):
 

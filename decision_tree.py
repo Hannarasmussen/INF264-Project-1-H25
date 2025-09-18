@@ -1,8 +1,8 @@
 import numpy as np
 from typing import Self
 
-from sklearn import tree
-from sklearn.tree import DecisionTreeClassifier
+# from sklearn import tree
+# from sklearn.tree import DecisionTreeClassifier
 
 """
 This is a suggested template and you do not need to follow it. You can change any part of it to fit your needs.
@@ -40,7 +40,6 @@ def entropy(y: np.ndarray) -> float:
     Return the entropy of a given NumPy array y.
     """
     return -np.sum(count(y)*np.log2(count(y)))
-    return -np.sum(count(y)*np.log2(count(y)))
 
 print("entropy:", entropy(np.array([3, 0, 0, 1, 1, 1, 2, 2, 2, 2])))
 
@@ -66,11 +65,38 @@ def most_common(y: np.ndarray) -> int:
 
 print("most common:", most_common(np.array([1, 2, 2, 3, 3, 3, 4, 4, 4, 3])))
 
-def best_split(X: np.ndarray, y: np.ndarray, criterion: str) -> tuple[int, float]:
+def impurity(criterion, y):
+    if criterion == "gini":
+        return gini_index(y)
+    else:
+        return entropy(y)
+
+def best_split(X: np.ndarray, y: np.ndarray, criterion: str, feature_indices = None) -> tuple[int, float]:
     """
     Given a NumPy array X of features and a NumPy array y of integer labels,
     return the index of the feature and the threshold value to split on that maximizes the information gain.
     """
+    n_samples, n_features = X.shape
+    if feature_indices is None:
+        feature_indices = range(n_features)
+
+    best_ig = -1
+    best_feature = None
+    best_threshold = None
+
+    for i in feature_indices:
+        threshold = np.median(X[:, i])
+        mask = split(X[:, i], threshold)
+        left_y, right_y = y[mask], y[~mask]
+        ig = impurity(criterion, y) - ((len(left_y)/n_samples) * impurity(criterion, left_y) + (len(right_y)/n_samples) * impurity(criterion, right_y))
+ 
+        if ig > best_ig:
+            best_ig = ig
+            best_feature = i
+            best_threshold = threshold
+
+    return best_feature, best_threshold
+  
    
 
 class Node:
@@ -136,25 +162,26 @@ class DecisionTree:
         if self.max_depth is not None and self.max_depth <= 0:
             return Node(value= most_common(y))
 
-        n_samples, n_features = X.shape
-        best_ig = -1
-        best_feature = None
-        best_threshold = None   
+        # n_samples, n_features = X.shape
+        # best_ig = -1
+        # best_feature = None
+        # best_threshold = None   
 
-        for i in range(n_features):
-            threshold = np.median(X[:, i])
-            mask = split(X[:, i], threshold)
-            right_y, left_y = y[mask], y[~mask]
+        # for i in range(n_features):
+        #     threshold = np.median(X[:, i])
+        #     mask = split(X[:, i], threshold)
+        #     right_y, left_y = y[mask], y[~mask]
 
-            ig = entropy(y) - ((len(left_y)/n_samples) * entropy(left_y) + (len(right_y)/n_samples) * entropy(right_y))
-            if ig > best_ig: 
-                best_ig = ig
-                best_feature = i
-                best_threshold = threshold
+        #     ig = entropy(y) - ((len(left_y)/n_samples) * entropy(left_y) + (len(right_y)/n_samples) * entropy(right_y))
+        #     if ig > best_ig: 
+        #         best_ig = ig
+        #         best_feature = i
+        #         best_threshold = threshold
 
-        best_threshold = np.median(X[:, best_feature])
+        # best_threshold = np.median(X[:, best_feature])
+        best_feature, best_threshold = best_split(X, y, self.criterion)
 
-        if best_ig <= 0:
+        if best_feature is None:
             return Node(value= most_common(y))
 
         mask = split(X[:, best_feature], best_threshold)
@@ -207,7 +234,7 @@ if __name__ == "__main__":
     rf = DecisionTree(max_depth=None, criterion="entropy")
     rf.fit(X_train, y_train)
 
-    print(f"Training accuracy: {accuracy_score(y_train, rf.predict_tree(X_train))}")
-    print(f"Validation accuracy: {accuracy_score(y_val, rf.predict_tree(X_val))}")
+    print(f"Training accuracy: {accuracy_score(y_train, rf.predict(X_train))}")
+    print(f"Validation accuracy: {accuracy_score(y_val, rf.predict(X_val))}")
 
 print("dette er Thone, din hacker")
