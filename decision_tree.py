@@ -97,6 +97,19 @@ def best_split(X: np.ndarray, y: np.ndarray, criterion: str, feature_indices = N
 
     return best_feature, best_threshold
   
+def features_subset(self, n_features: int) -> np.ndarray:
+    if self.max_features == "sqrt":
+        max_features = int(np.sqrt(n_features))
+    elif self.max_features == "log2":
+        max_features = int(np.log2(n_features))
+    else:
+        max_features = n_features
+
+    feature_indices = np.random.choice(
+        n_features, size=max_features, replace=False
+    )
+    return feature_indices
+
    
 
 class Node:
@@ -131,10 +144,12 @@ class DecisionTree:
         self,
         max_depth: int | None = None,
         criterion: str = "entropy",
+        max_features: str | None = None,
     ) -> None:
         self.root = None
         self.criterion = criterion
         self.max_depth = max_depth
+        self.max_features = max_features
 
     def fit(
         self,
@@ -161,25 +176,11 @@ class DecisionTree:
         
         if self.max_depth is not None and self.max_depth <= 0:
             return Node(value= most_common(y))
+        
+        # X skal være random valgt i gitt størrelse
+        feature_indices = features_subset(self, X.shape[1])
 
-        # n_samples, n_features = X.shape
-        # best_ig = -1
-        # best_feature = None
-        # best_threshold = None   
-
-        # for i in range(n_features):
-        #     threshold = np.median(X[:, i])
-        #     mask = split(X[:, i], threshold)
-        #     right_y, left_y = y[mask], y[~mask]
-
-        #     ig = entropy(y) - ((len(left_y)/n_samples) * entropy(left_y) + (len(right_y)/n_samples) * entropy(right_y))
-        #     if ig > best_ig: 
-        #         best_ig = ig
-        #         best_feature = i
-        #         best_threshold = threshold
-
-        # best_threshold = np.median(X[:, best_feature])
-        best_feature, best_threshold = best_split(X, y, self.criterion)
+        best_feature, best_threshold = best_split(X, y, self.criterion, feature_indices)
 
         if best_feature is None:
             return Node(value= most_common(y))
@@ -231,7 +232,7 @@ if __name__ == "__main__":
     )
 
     # Expect the training accuracy to be 1.0 when max_depth=None
-    rf = DecisionTree(max_depth=None, criterion="entropy")
+    rf = DecisionTree(max_depth=None, criterion="entropy", max_features="None")
     rf.fit(X_train, y_train)
 
     print(f"Training accuracy: {accuracy_score(y_train, rf.predict(X_train))}")
