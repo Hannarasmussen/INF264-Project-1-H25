@@ -71,7 +71,7 @@ def impurity(criterion, y):
     else:
         return entropy(y)
 
-def best_split(X: np.ndarray, y: np.ndarray, criterion: str, feature_indices = None) -> tuple[int, float]:
+def best_split(X: np.ndarray, y: np.ndarray, criterion: str, feature_indices) -> tuple[int, float]:
     """
     Given a NumPy array X of features and a NumPy array y of integer labels,
     return the index of the feature and the threshold value to split on that maximizes the information gain.
@@ -232,7 +232,7 @@ if __name__ == "__main__":
     )
 
     # Expect the training accuracy to be 1.0 when max_depth=None
-    rf = DecisionTree(max_depth=None, criterion="entropy", max_features="None")
+    rf = DecisionTree(max_depth=None, criterion="entropy", max_features="sqrt")
     rf.fit(X_train, y_train)
 
     print(f"Training accuracy: {accuracy_score(y_train, rf.predict(X_train))}")
