@@ -15,6 +15,14 @@ class RandomForest:
         self.criterion = criterion
         self.max_features = max_features
 
+    def get_params(self, deep=True):
+        return {"n_estimators": self.n_estimators, "max_depth": self.max_depth, "criterion": self.criterion, "max_features": self.max_features}
+
+    def set_params(self, **params):
+        for key, value in params.items():
+            setattr(self, key, value)
+        return self
+
     def features_subset(self, n_features: int) -> np.ndarray:
         if self.max_features == "sqrt":
             max_features = int(np.sqrt(n_features))

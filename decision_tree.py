@@ -110,6 +110,14 @@ class DecisionTree:
         self.criterion = criterion
         self.max_depth = max_depth
 
+    def get_params(self, deep=True):
+        return {"criterion": self.criterion, "max_depth": self.max_depth}
+
+    def set_params(self, **params):
+        for key, value in params.items():
+            setattr(self, key, value)
+        return self
+
     def fit(
         self,
         X: np.ndarray,
