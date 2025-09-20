@@ -9,15 +9,18 @@ class RandomForest:
         max_depth: int = 5,
         criterion: str = "entropy",
         max_features: None | str = "sqrt",
+        random_state: int | None = None,
     ) -> None:
         self.n_estimators = n_estimators
         self.max_depth = max_depth
         self.criterion = criterion
         self.max_features = max_features
         self.trees = []
+        self.random_state = random_state
+        self.rng = np.random.default_rng(random_state)
 
     def get_params(self, deep=True):
-        return {"n_estimators": self.n_estimators, "max_depth": self.max_depth, "criterion": self.criterion, "max_features": self.max_features}
+        return {"n_estimators": self.n_estimators, "max_depth": self.max_depth, "criterion": self.criterion, "max_features": self.max_features, "random_state": self.random_state}
 
     def set_params(self, **params):
         for key, value in params.items():
@@ -29,8 +32,13 @@ class RandomForest:
         n_samples = X.shape[0]
         self.trees = []
 
-        for _ in range(self.n_estimators):
-            indices = np.random.choice(n_samples, size=n_samples, replace=True)
+        for i in range(self.n_estimators):
+            #shall not be random here, should be seed?????
+            #Pass random_state into RandomForest and use np.random.default_rng(seed).
+            #rng = np.random.default_rng(seed)
+
+            #indices = np.random.choice(n_samples, size=n_samples, replace=True)
+            indices = self.rng.choice(n_samples, size=n_samples, replace=True)
             X_sample, y_sample = X[indices], y[indices]
 
             tree = DecisionTree(max_depth=self.max_depth, criterion=self.criterion, max_features=self.max_features)
