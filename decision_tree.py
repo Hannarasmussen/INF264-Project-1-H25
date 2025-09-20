@@ -143,12 +143,14 @@ class DecisionTree:
         max_depth: int | None = None,
         criterion: str = "entropy",
         max_features: str | None = None,
+        random_state: int | None = None,
     ) -> None:
         self.root = None
         self.criterion = criterion
         self.max_depth = max_depth
         self.max_features = max_features
-
+        self.random_state = random_state
+        self.rng = np.random.default_rng(random_state)
     def get_params(self, deep=True):
         return {"criterion": self.criterion, "max_depth": self.max_depth}
 
@@ -164,7 +166,7 @@ class DecisionTree:
             max_features = int(np.log2(n_features))
         else:
             max_features = n_features
-        return np.random.choice(
+        return self.rng.choice(
             n_features, size=max_features, replace=False
         )
     

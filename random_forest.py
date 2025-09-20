@@ -40,8 +40,10 @@ class RandomForest:
             #indices = np.random.choice(n_samples, size=n_samples, replace=True)
             indices = self.rng.choice(n_samples, size=n_samples, replace=True)
             X_sample, y_sample = X[indices], y[indices]
-
-            tree = DecisionTree(max_depth=self.max_depth, criterion=self.criterion, max_features=self.max_features)
+            if self.random_state is not None:
+                tree = DecisionTree(max_depth=self.max_depth, criterion=self.criterion, max_features=self.max_features, random_state=self.random_state + i)
+            else:
+                tree = DecisionTree(max_depth=self.max_depth, criterion=self.criterion, max_features=self.max_features)
             tree.fit(X_sample, y_sample)
             self.trees.append(tree)
 
@@ -73,7 +75,7 @@ if __name__ == "__main__":
     )
 
     rf = RandomForest(
-        n_estimators=20, max_depth=5, criterion="gini", max_features="log2"
+        n_estimators=20, max_depth=5, criterion="gini", max_features="log2", random_state=seed
     )
     rf.fit(X_train, y_train)
 
