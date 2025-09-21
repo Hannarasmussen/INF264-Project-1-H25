@@ -130,11 +130,12 @@ class DecisionTree:
         self.max_features = max_features
         self.random_state = random_state
         self.rng = np.random.default_rng(random_state)
+
     def get_params(self, deep=True):
         """
         Return the parameters of the DecisionTree instance as a dictionary.
         """
-        return {"criterion": self.criterion, "max_depth": self.max_depth}
+        return {"criterion": self.criterion, "max_depth": self.max_depth, "random_state": self.random_state}
 
     def set_params(self, **params):
         """
@@ -166,12 +167,13 @@ class DecisionTree:
         """
         Fit the DecisionTree model on the training data X and labels y.
         """
-        self.root = self._fit(X, y)
+        self.root = self._fit(X, y, 0)
 
     def _fit(
         self,
         X: np.ndarray,
         y: np.ndarray,
+        depth
     ):
         
         """
@@ -183,8 +185,8 @@ class DecisionTree:
         
         if X.shape[0] == 0:
             return Node(value= most_common(y))
-        
-        if self.max_depth is not None and self.max_depth <= 0:
+
+        if self.max_depth is not None and depth >= self.max_depth:
             return Node(value= most_common(y))
 
         feature_indices = self.features_subset(X.shape[1])
@@ -195,8 +197,8 @@ class DecisionTree:
             return Node(value= most_common(y))
 
         mask = split(X[:, best_feature], best_threshold)
-        left_node = self._fit(X[mask], y[mask])
-        right_node = self._fit(X[~mask], y[~mask])
+        left_node = self._fit(X[mask], y[mask], depth + 1)
+        right_node = self._fit(X[~mask], y[~mask], depth + 1)
 
         return Node(
             feature=best_feature,
