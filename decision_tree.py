@@ -50,6 +50,9 @@ def most_common(y: np.ndarray) -> int:
     return np.bincount(y).argmax()
 
 def impurity(criterion: str, y: np.ndarray) -> float:
+    """
+    Return the impurity of y using the specified criterion.
+    """
     if criterion == "gini":
         return gini_index(y)
     return entropy(y)
@@ -108,6 +111,9 @@ class Node:
         self.value = value
 
     def is_leaf(self) -> bool:
+        """
+        Return True if the node is a leaf node.
+        """
         return self.value is not None
 
 class DecisionTree:
@@ -125,14 +131,23 @@ class DecisionTree:
         self.random_state = random_state
         self.rng = np.random.default_rng(random_state)
     def get_params(self, deep=True):
+        """
+        Return the parameters of the DecisionTree instance as a dictionary.
+        """
         return {"criterion": self.criterion, "max_depth": self.max_depth}
 
     def set_params(self, **params):
+        """
+        Set the parameters of the DecisionTree instance using keyword arguments.
+        """
         for key, value in params.items():
             setattr(self, key, value)
         return self
 
     def features_subset(self, n_features: int) -> np.ndarray:
+        """
+        Select a random subset of feature indices based on max_features.
+        """
         if self.max_features == "sqrt":
             max_features = int(np.sqrt(n_features))
         elif self.max_features == "log2":
@@ -148,6 +163,9 @@ class DecisionTree:
         X: np.ndarray,
         y: np.ndarray,
     ):
+        """
+        Fit the DecisionTree model on the training data X and labels y.
+        """
         self.root = self._fit(X, y)
 
     def _fit(

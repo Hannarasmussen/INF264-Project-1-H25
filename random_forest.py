@@ -20,15 +20,23 @@ class RandomForest:
         self.rng = np.random.default_rng(random_state)
 
     def get_params(self, deep=True):
+        """
+        Return the parameters of the RandomForest instance as a dictionary.
+        """
         return {"n_estimators": self.n_estimators, "max_depth": self.max_depth, "criterion": self.criterion, "max_features": self.max_features, "random_state": self.random_state}
 
     def set_params(self, **params):
+        """
+        Set the parameters of the RandomForest instance using keyword arguments.
+        """
         for key, value in params.items():
             setattr(self, key, value)
         return self
 
     def fit(self, X: np.ndarray, y: np.ndarray):
-
+        """
+        Fit the RandomForest model on the training data X and labels y.
+        """
         n_samples = X.shape[0]
         self.trees = []
 
@@ -43,6 +51,9 @@ class RandomForest:
             self.trees.append(tree)
 
     def predict(self, X: np.ndarray) -> np.ndarray:
+        """
+        Given a NumPy array X of features, return predicted integer labels using majority vote from all trees.
+        """
         all_prediction = []
         for tree in self.trees:
             predictions = tree.predict(X)
