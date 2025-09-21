@@ -33,11 +33,6 @@ class RandomForest:
         self.trees = []
 
         for i in range(self.n_estimators):
-            #shall not be random here, should be seed?????
-            #Pass random_state into RandomForest and use np.random.default_rng(seed).
-            #rng = np.random.default_rng(seed)
-
-            #indices = np.random.choice(n_samples, size=n_samples, replace=True)
             indices = self.rng.choice(n_samples, size=n_samples, replace=True)
             X_sample, y_sample = X[indices], y[indices]
             if self.random_state is not None:
@@ -46,7 +41,6 @@ class RandomForest:
                 tree = DecisionTree(max_depth=self.max_depth, criterion=self.criterion, max_features=self.max_features)
             tree.fit(X_sample, y_sample)
             self.trees.append(tree)
-
 
     def predict(self, X: np.ndarray) -> np.ndarray:
         all_prediction = []
