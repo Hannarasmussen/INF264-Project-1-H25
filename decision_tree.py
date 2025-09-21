@@ -13,9 +13,8 @@ def count(y: np.ndarray) -> np.ndarray:
     Example:
         count(np.array([3, 0, 0, 1, 1, 1, 2, 2, 2, 2])) -> np.array([0.2, 0.3, 0.4, 0.1])
     """
-    values , counts = np.unique(y, return_counts=True)
+    _ , counts = np.unique(y, return_counts=True)
     return counts / counts.sum()
-
 
 def gini_index(y: np.ndarray) -> float:
     """
@@ -24,10 +23,7 @@ def gini_index(y: np.ndarray) -> float:
     Example:
         gini_index(np.array([1, 1, 2, 2, 3, 3, 4, 4])) -> 0.75
     """
-
     return 1 - np.sum(count(y)**2)
-
-#print("gini index:", gini_index(np.array([1, 1, 2, 2, 3, 3, 4, 4])))
 
 def entropy(y: np.ndarray) -> float:
     """
@@ -37,8 +33,6 @@ def entropy(y: np.ndarray) -> float:
     probs = probs[probs > 0]
     return -np.sum(probs * np.log2(probs))
 
-#print("entropy:", entropy(np.array([3, 0, 0, 1, 1, 1, 2, 2, 2, 2])))
-
 def split(x: np.ndarray, value: float) -> np.ndarray:
     """
     Return a boolean mask for the elements of x satisfying x <= value.
@@ -46,9 +40,6 @@ def split(x: np.ndarray, value: float) -> np.ndarray:
         split(np.array([1, 2, 3, 4, 5, 2]), 3) -> np.array([True, True, True, False, False, True])
     """
     return x <= value
-
-##print("split:", split(np.array([1, 2, 3, 4, 5, 2]), 3))
-
 
 def most_common(y: np.ndarray) -> int:
     """
@@ -58,9 +49,10 @@ def most_common(y: np.ndarray) -> int:
     """
     return np.bincount(y).argmax()
 
-#print("most common:", most_common(np.array([1, 2, 2, 3, 3, 3, 4, 4, 4, 3])))
-
 def impurity(criterion: str, y: np.ndarray) -> float:
+    """
+    Return the impurity of y using the specified criterion.
+    """
     if criterion == "gini":
         return gini_index(y)
     return entropy(y)
@@ -77,7 +69,6 @@ def best_split(X: np.ndarray, y: np.ndarray, criterion: str, feature_indices) ->
     best_ig = -1
     best_feature = None
     best_threshold = None
-
 
     current_impurity = impurity(criterion, y)
 
@@ -97,19 +88,6 @@ def best_split(X: np.ndarray, y: np.ndarray, criterion: str, feature_indices) ->
 
     return best_feature, best_threshold
 
-    # for i in feature_indices:
-    #     threshold = np.median(X[:, i])
-    #     mask = split(X[:, i], threshold)
-    #     left_y, right_y = y[mask], y[~mask]
-    #     ig = impurity(criterion, y) - ((len(left_y)/n_samples) * impurity(criterion, left_y) + (len(right_y)/n_samples) * impurity(criterion, right_y))
- 
-    #     if ig > best_ig:
-    #         best_ig = ig
-    #         best_feature = i
-    #         best_threshold = threshold
-
-    # return best_feature, best_threshold
-
 class Node:
     """
     A class to represent a node in a decision tree.
@@ -117,7 +95,7 @@ class Node:
     The attribute feature is the index of the feature to split on, threshold is the value to split at,
     and left and right are the left and right child nodes.
     """
-
+    
     def __init__(
         self,
         feature: int = 0,
@@ -133,9 +111,10 @@ class Node:
         self.value = value
 
     def is_leaf(self) -> bool:
-        # Return True iff the node is a leaf node
+        """
+        Return True if the node is a leaf node.
+        """
         return self.value is not None
-
 
 class DecisionTree:
     def __init__(
@@ -152,14 +131,23 @@ class DecisionTree:
         self.random_state = random_state
         self.rng = np.random.default_rng(random_state)
     def get_params(self, deep=True):
+        """
+        Return the parameters of the DecisionTree instance as a dictionary.
+        """
         return {"criterion": self.criterion, "max_depth": self.max_depth}
 
     def set_params(self, **params):
+        """
+        Set the parameters of the DecisionTree instance using keyword arguments.
+        """
         for key, value in params.items():
             setattr(self, key, value)
         return self
 
     def features_subset(self, n_features: int) -> np.ndarray:
+        """
+        Select a random subset of feature indices based on max_features.
+        """
         if self.max_features == "sqrt":
             max_features = int(np.sqrt(n_features))
         elif self.max_features == "log2":
@@ -175,6 +163,9 @@ class DecisionTree:
         X: np.ndarray,
         y: np.ndarray,
     ):
+        """
+        Fit the DecisionTree model on the training data X and labels y.
+        """
         self.root = self._fit(X, y)
 
     def _fit(
@@ -188,17 +179,14 @@ class DecisionTree:
         """
 
         if len(np.unique(y)) == 1:
-            #return Node(value= most_common(y))
             return Node(value=y[0])
         
-
         if X.shape[0] == 0:
             return Node(value= most_common(y))
         
         if self.max_depth is not None and self.max_depth <= 0:
             return Node(value= most_common(y))
-        
-        # X skal være random valgt i gitt størrelse
+
         feature_indices = self.features_subset(X.shape[1])
 
         best_feature, best_threshold = best_split(X, y, self.criterion, feature_indices)
@@ -217,7 +205,6 @@ class DecisionTree:
             right=right_node,
         )
     
-
     def predict(self, X: np.ndarray) -> np.ndarray:
         """
         Given a NumPy array X of features, return a NumPy array of predicted integer labels.
@@ -258,5 +245,3 @@ if __name__ == "__main__":
 
     print(f"Training accuracy: {accuracy_score(y_train, rf.predict(X_train))}")
     print(f"Validation accuracy: {accuracy_score(y_val, rf.predict(X_val))}")
-
-#print("dette er Thone, din hacker")
