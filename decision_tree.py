@@ -1,9 +1,6 @@
 import numpy as np
 from typing import Self
 
-# from sklearn import tree
-# from sklearn.tree import DecisionTreeClassifier
-
 """
 This is a suggested template and you do not need to follow it. You can change any part of it to fit your needs.
 There are some helper functions that might be useful to implement first.
@@ -16,11 +13,8 @@ def count(y: np.ndarray) -> np.ndarray:
     Example:
         count(np.array([3, 0, 0, 1, 1, 1, 2, 2, 2, 2])) -> np.array([0.2, 0.3, 0.4, 0.1])
     """
-    _ , counts = np.unique(y, return_counts=True)
-    proportions = counts / counts.sum()
-    return proportions
-    
-print( "count:", count(np.array([3, 0, 0, 1, 1, 1, 2, 2, 2, 2])))
+    values , counts = np.unique(y, return_counts=True)
+    return counts / counts.sum()
 
 
 def gini_index(y: np.ndarray) -> float:
@@ -33,15 +27,17 @@ def gini_index(y: np.ndarray) -> float:
 
     return 1 - np.sum(count(y)**2)
 
-print("gini index:", gini_index(np.array([1, 1, 2, 2, 3, 3, 4, 4])))
+#print("gini index:", gini_index(np.array([1, 1, 2, 2, 3, 3, 4, 4])))
 
 def entropy(y: np.ndarray) -> float:
     """
     Return the entropy of a given NumPy array y.
     """
-    return -np.sum(count(y)*np.log2(count(y)))
+    probs = count(y)
+    probs = probs[probs > 0]
+    return -np.sum(probs * np.log2(probs))
 
-print("entropy:", entropy(np.array([3, 0, 0, 1, 1, 1, 2, 2, 2, 2])))
+#print("entropy:", entropy(np.array([3, 0, 0, 1, 1, 1, 2, 2, 2, 2])))
 
 def split(x: np.ndarray, value: float) -> np.ndarray:
     """
@@ -51,7 +47,7 @@ def split(x: np.ndarray, value: float) -> np.ndarray:
     """
     return x <= value
 
-print("split:", split(np.array([1, 2, 3, 4, 5, 2]), 3))
+##print("split:", split(np.array([1, 2, 3, 4, 5, 2]), 3))
 
 
 def most_common(y: np.ndarray) -> int:
@@ -60,16 +56,14 @@ def most_common(y: np.ndarray) -> int:
     Example:
         most_common(np.array([1, 2, 2, 3, 3, 3, 4, 4, 4, 4])) -> 4
     """
-    value, counts = np.unique(y, return_counts=True)
-    return value[np.argmax(counts)]
+    return np.bincount(y).argmax()
 
-print("most common:", most_common(np.array([1, 2, 2, 3, 3, 3, 4, 4, 4, 3])))
+#print("most common:", most_common(np.array([1, 2, 2, 3, 3, 3, 4, 4, 4, 3])))
 
-def impurity(criterion, y):
+def impurity(criterion: str, y: np.ndarray) -> float:
     if criterion == "gini":
         return gini_index(y)
-    else:
-        return entropy(y)
+    return entropy(y)
 
 def best_split(X: np.ndarray, y: np.ndarray, criterion: str, feature_indices) -> tuple[int, float]:
     """
@@ -84,33 +78,37 @@ def best_split(X: np.ndarray, y: np.ndarray, criterion: str, feature_indices) ->
     best_feature = None
     best_threshold = None
 
+
+    current_impurity = impurity(criterion, y)
+
     for i in feature_indices:
-        threshold = np.median(X[:, i])
-        mask = split(X[:, i], threshold)
-        left_y, right_y = y[mask], y[~mask]
-        ig = impurity(criterion, y) - ((len(left_y)/n_samples) * impurity(criterion, left_y) + (len(right_y)/n_samples) * impurity(criterion, right_y))
- 
-        if ig > best_ig:
-            best_ig = ig
-            best_feature = i
-            best_threshold = threshold
+        thresholds = np.unique(X[:, i])
+        for t in thresholds:
+            mask = X[:, i] <= t
+            left, right = y[mask], y[~mask]
+            if len(left) == 0 or len(right) == 0:
+                continue
+            ig = current_impurity - (len(left)/n_samples*impurity(criterion, left) + len(right)/n_samples*impurity(criterion, right))
+            
+            if ig > best_ig:
+                best_ig = ig
+                best_feature = i
+                best_threshold = t
 
     return best_feature, best_threshold
-  
-def features_subset(self, n_features: int) -> np.ndarray:
-    if self.max_features == "sqrt":
-        max_features = int(np.sqrt(n_features))
-    elif self.max_features == "log2":
-        max_features = int(np.log2(n_features))
-    else:
-        max_features = n_features
 
-    feature_indices = np.random.choice(
-        n_features, size=max_features, replace=False
-    )
-    return feature_indices
+    # for i in feature_indices:
+    #     threshold = np.median(X[:, i])
+    #     mask = split(X[:, i], threshold)
+    #     left_y, right_y = y[mask], y[~mask]
+    #     ig = impurity(criterion, y) - ((len(left_y)/n_samples) * impurity(criterion, left_y) + (len(right_y)/n_samples) * impurity(criterion, right_y))
+ 
+    #     if ig > best_ig:
+    #         best_ig = ig
+    #         best_feature = i
+    #         best_threshold = threshold
 
-   
+    # return best_feature, best_threshold
 
 class Node:
     """
@@ -145,12 +143,33 @@ class DecisionTree:
         max_depth: int | None = None,
         criterion: str = "entropy",
         max_features: str | None = None,
+        random_state: int | None = None,
     ) -> None:
         self.root = None
         self.criterion = criterion
         self.max_depth = max_depth
         self.max_features = max_features
+        self.random_state = random_state
+        self.rng = np.random.default_rng(random_state)
+    def get_params(self, deep=True):
+        return {"criterion": self.criterion, "max_depth": self.max_depth}
 
+    def set_params(self, **params):
+        for key, value in params.items():
+            setattr(self, key, value)
+        return self
+
+    def features_subset(self, n_features: int) -> np.ndarray:
+        if self.max_features == "sqrt":
+            max_features = int(np.sqrt(n_features))
+        elif self.max_features == "log2":
+            max_features = int(np.log2(n_features))
+        else:
+            max_features = n_features
+        return self.rng.choice(
+            n_features, size=max_features, replace=False
+        )
+    
     def fit(
         self,
         X: np.ndarray,
@@ -169,16 +188,18 @@ class DecisionTree:
         """
 
         if len(np.unique(y)) == 1:
-            return Node(value= most_common(y))
+            #return Node(value= most_common(y))
+            return Node(value=y[0])
+        
 
-        if np.all(X == X[0]):
+        if X.shape[0] == 0:
             return Node(value= most_common(y))
         
         if self.max_depth is not None and self.max_depth <= 0:
             return Node(value= most_common(y))
         
         # X skal være random valgt i gitt størrelse
-        feature_indices = features_subset(self, X.shape[1])
+        feature_indices = self.features_subset(X.shape[1])
 
         best_feature, best_threshold = best_split(X, y, self.criterion, feature_indices)
 
@@ -232,10 +253,10 @@ if __name__ == "__main__":
     )
 
     # Expect the training accuracy to be 1.0 when max_depth=None
-    rf = DecisionTree(max_depth=None, criterion="entropy", max_features="sqrt")
+    rf = DecisionTree(max_depth=None, criterion="entropy")
     rf.fit(X_train, y_train)
 
     print(f"Training accuracy: {accuracy_score(y_train, rf.predict(X_train))}")
     print(f"Validation accuracy: {accuracy_score(y_val, rf.predict(X_val))}")
 
-print("dette er Thone, din hacker")
+#print("dette er Thone, din hacker")
